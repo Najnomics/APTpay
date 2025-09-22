@@ -1,0 +1,26 @@
+[package]
+name = "APTpay"
+version = "1.0.0"
+authors = ["APTpay Team"]
+upgrade_policy = "compatible"
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "mainnet"
+subdir = "aptos-move/framework/aptos-framework"
+
+[dependencies.AptosStdlib]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "mainnet"
+subdir = "aptos-move/framework/aptos-stdlib"
+
+[dependencies.MoveStdlib]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "mainnet"
+subdir = "aptos-move/framework/move-stdlib"
+
+[addresses]
+aptpay = "0xaa7c8dabab649d2bebfb17d8463c5a395a078ca09919da2c9cf26763997e4ad7"
+std = "0x1"
+aptos_framework = "0x1"
+aptos_std = "0x1"

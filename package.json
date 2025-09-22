@@ -1,0 +1,30 @@
+{
+  "name": "aptpay",
+  "version": "1.0.0",
+  "description": "Cross-Border Payroll & Treasury Platform on Aptos",
+  "main": "index.js",
+  "scripts": {
+    "compile": "cd contracts && aptos move compile",
+    "test": "cd contracts && aptos move test",
+    "deploy": "cd contracts && aptos move publish --profile devnet",
+    "setup-demo": "node scripts/setup-demo.js",
+    "demo-payroll": "node scripts/run-payroll-demo.js"
+  },
+  "keywords": [
+    "aptos",
+    "defi",
+    "payroll",
+    "treasury",
+    "blockchain",
+    "move"
+  ],
+  "author": "APTpay Team",
+  "license": "MIT",
+  "dependencies": {
+    "@aptos-labs/ts-sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
