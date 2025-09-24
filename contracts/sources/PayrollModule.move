@@ -25,7 +25,7 @@ module aptpay::simple_payroll {
     }
 
     /// Initialize the APTpay payroll system
-    public fun initialize(admin: &signer) {
+    public entry fun initialize(admin: &signer) {
         let admin_addr = signer::address_of(admin);
         assert!(!exists<PayrollSystem>(admin_addr), error::already_exists(E_NOT_INITIALIZED));
 
@@ -46,7 +46,7 @@ module aptpay::simple_payroll {
     }
 
     /// Add employee to payroll system
-    public fun add_employee(admin: &signer, employee: address) acquires PayrollSystem {
+    public entry fun add_employee(admin: &signer, employee: address) acquires PayrollSystem {
         let admin_addr = signer::address_of(admin);
         let payroll = borrow_global_mut<PayrollSystem>(admin_addr);
         assert!(payroll.admin == admin_addr, error::permission_denied(E_NOT_AUTHORIZED));
@@ -56,7 +56,7 @@ module aptpay::simple_payroll {
     }
 
     /// Deposit funds to treasury
-    public fun deposit_treasury(admin: &signer, amount: u64) acquires CompanyTreasury {
+    public entry fun deposit_treasury(admin: &signer, amount: u64) acquires CompanyTreasury {
         let admin_addr = signer::address_of(admin);
         let treasury = borrow_global_mut<CompanyTreasury>(admin_addr);
         
@@ -65,7 +65,7 @@ module aptpay::simple_payroll {
     }
 
     /// Execute payroll for all employees
-    public fun execute_payroll(admin: &signer, salary_per_employee: u64) acquires PayrollSystem, CompanyTreasury {
+    public entry fun execute_payroll(admin: &signer, salary_per_employee: u64) acquires PayrollSystem, CompanyTreasury {
         let admin_addr = signer::address_of(admin);
         let payroll = borrow_global_mut<PayrollSystem>(admin_addr);
         assert!(payroll.admin == admin_addr, error::permission_denied(E_NOT_AUTHORIZED));
@@ -85,7 +85,7 @@ module aptpay::simple_payroll {
     }
 
     /// Calculate and add yield to treasury
-    public fun compound_yield(admin: &signer) acquires CompanyTreasury {
+    public entry fun compound_yield(admin: &signer) acquires CompanyTreasury {
         let admin_addr = signer::address_of(admin);
         let treasury = borrow_global_mut<CompanyTreasury>(admin_addr);
         
@@ -101,7 +101,7 @@ module aptpay::simple_payroll {
     }
 
     /// Emergency pause system
-    public fun emergency_pause(admin: &signer) acquires PayrollSystem {
+    public entry fun emergency_pause(admin: &signer) acquires PayrollSystem {
         let admin_addr = signer::address_of(admin);
         let payroll = borrow_global_mut<PayrollSystem>(admin_addr);
         assert!(payroll.admin == admin_addr, error::permission_denied(E_NOT_AUTHORIZED));
@@ -110,7 +110,7 @@ module aptpay::simple_payroll {
     }
 
     /// Unpause system
-    public fun unpause(admin: &signer) acquires PayrollSystem {
+    public entry fun unpause(admin: &signer) acquires PayrollSystem {
         let admin_addr = signer::address_of(admin);
         let payroll = borrow_global_mut<PayrollSystem>(admin_addr);
         assert!(payroll.admin == admin_addr, error::permission_denied(E_NOT_AUTHORIZED));
