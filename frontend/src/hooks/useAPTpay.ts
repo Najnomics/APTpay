@@ -264,7 +264,7 @@ export const useAPTpay = (config: UseAPTpayConfig = {}): UseAPTpayReturn => {
       return { hash, success: true };
     } catch (err) {
       handleError(err, "ADD_EMPLOYEE_ERROR", "Failed to add employee");
-      return { hash: "", success: false, error: err.message };
+      return { hash: "", success: false, error: (err as Error).message };
     }
   }, [client, currentAccount, handleError]);
 
@@ -288,7 +288,7 @@ export const useAPTpay = (config: UseAPTpayConfig = {}): UseAPTpayReturn => {
       return { hash, success: true };
     } catch (err) {
       handleError(err, "CREATE_BATCH_ERROR", "Failed to create payroll batch");
-      return { hash: "", success: false, error: err.message };
+      return { hash: "", success: false, error: (err as Error).message };
     }
   }, [client, currentAccount, handleError]);
 
@@ -302,7 +302,7 @@ export const useAPTpay = (config: UseAPTpayConfig = {}): UseAPTpayReturn => {
       return { hash, success: true };
     } catch (err) {
       handleError(err, "EXECUTE_PAYROLL_ERROR", "Failed to execute payroll");
-      return { hash: "", success: false, error: err.message };
+      return { hash: "", success: false, error: (err as Error).message };
     }
   }, [client, currentAccount, handleError]);
 
@@ -326,7 +326,7 @@ export const useAPTpay = (config: UseAPTpayConfig = {}): UseAPTpayReturn => {
       return { hash, success: true };
     } catch (err) {
       handleError(err, "DEPOSIT_TREASURY_ERROR", "Failed to deposit to treasury");
-      return { hash: "", success: false, error: err.message };
+      return { hash: "", success: false, error: (err as Error).message };
     }
   }, [client, currentAccount, handleError]);
 
@@ -343,7 +343,7 @@ export const useAPTpay = (config: UseAPTpayConfig = {}): UseAPTpayReturn => {
       return { hash, success: true };
     } catch (err) {
       handleError(err, "WITHDRAW_TREASURY_ERROR", "Failed to withdraw from treasury");
-      return { hash: "", success: false, error: err.message };
+      return { hash: "", success: false, error: (err as Error).message };
     }
   }, [client, currentAccount, handleError]);
 
@@ -367,7 +367,7 @@ export const useAPTpay = (config: UseAPTpayConfig = {}): UseAPTpayReturn => {
       return { hash, success: true };
     } catch (err) {
       handleError(err, "SUBMIT_KYC_ERROR", "Failed to submit KYC");
-      return { hash: "", success: false, error: err.message };
+      return { hash: "", success: false, error: (err as Error).message };
     }
   }, [client, currentAccount, handleError]);
 

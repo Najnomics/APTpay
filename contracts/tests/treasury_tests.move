@@ -80,7 +80,7 @@ module aptpay::treasury_tests {
         treasury_module::initialize(admin);
         
         // Calculate yield (should not fail even with zero balance)
-        treasury_module::calculate_treasury_yield();
+        treasury_module::calculate_treasury_yield(admin);
         
         // Test completes without errors
     }

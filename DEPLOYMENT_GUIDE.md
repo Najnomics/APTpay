@@ -1,395 +1,228 @@
 # 🚀 APTpay Deployment Guide
 
-Complete guide for deploying and running the APTpay Cross-Border Payroll & Treasury Platform.
+This guide will walk you through deploying and running the complete APTpay platform.
 
 ## 📋 Prerequisites
 
-### System Requirements
-- **Node.js** v18+ 
-- **Aptos CLI** v2.0+
-- **Git** latest
-- **VS Code** (recommended) with Move language extension
+- **Aptos CLI** (v2.0+)
+- **Node.js** (v18+)
+- **npm** or **yarn**
+- **Git**
 
-### Aptos CLI Installation
+## 🔧 Installation
+
+### 1. Clone the Repository
 ```bash
-# macOS/Linux
+git clone https://github.com/your-username/aptos-aptpay.git
+cd aptos-aptpay
+```
+
+### 2. Install Aptos CLI
+```bash
 curl -fsSL "https://aptos.dev/scripts/install_cli.py" | python3
-
-# Verify installation
-aptos --version
 ```
 
-### Account Setup
+### 3. Install Dependencies
 ```bash
-# Initialize a new Aptos account profile
-aptos init --profile aptpay-deployer
-
-# Fund the account (devnet/testnet only)
-aptos account fund-with-faucet --profile aptpay-deployer
-```
-
-## 🏗️ Project Setup
-
-### 1. Clone and Install Dependencies
-```bash
-git clone <repository-url>
-cd APTpay
-
-# Install Node.js dependencies
+# Frontend dependencies
+cd frontend
 npm install
 
-# Install frontend dependencies
-cd frontend && npm install && cd ..
+# Telegram bot dependencies
+cd ../telegram-bot
+npm install
+
+# Back to root
+cd ..
 ```
 
-### 2. Environment Configuration
-Create `.env` file in project root:
-```env
-# Network Configuration
-APTOS_NETWORK=devnet
-APTOS_PROFILE=aptpay-deployer
+## 🚀 Deployment Steps
 
-# Package Address (will be updated after deployment)
-APTPAY_PACKAGE_ADDRESS=0x1
-
-# Frontend Configuration
-REACT_APP_NETWORK=devnet
-REACT_APP_API_URL=http://localhost:8080
-
-# Optional: Custom Node URLs
-APTOS_NODE_URL=https://fullnode.devnet.aptoslabs.com/v1
-APTOS_FAUCET_URL=https://faucet.devnet.aptoslabs.com
-```
-
-## 📦 Smart Contract Deployment
-
-### 1. Compile Contracts
+### 1. Deploy Smart Contracts
 ```bash
 cd contracts
-aptos move compile --profile aptpay-deployer
+./scripts/deploy-contracts.sh
 ```
 
-### 2. Run Tests
+This will:
+- Compile all Move contracts
+- Run comprehensive tests
+- Deploy to Aptos devnet
+- Initialize the system
+- Generate deployment info
+
+### 2. Set Up Demo Environment
 ```bash
-aptos move test --profile aptpay-deployer
+./scripts/setup-demo.sh
 ```
 
-### 3. Deploy to Network
+This will:
+- Create demo employees
+- Deposit demo funds
+- Calculate initial yield
+- Set up demo configuration
+
+### 3. Start the Frontend
 ```bash
-# Make deployment script executable
-chmod +x ../scripts/deploy-contracts.sh
-
-# Deploy to devnet
-../scripts/deploy-contracts.sh devnet aptpay-deployer
-
-# Or deploy manually
-aptos move publish --profile aptpay-deployer
+cd frontend
+npm start
 ```
 
-### 4. Get Package Address
+The React dashboard will be available at `http://localhost:3000`
+
+### 4. Start the Telegram Bot
 ```bash
-# View deployed package address
-aptos account list --profile aptpay-deployer --query balance
+cd telegram-bot
+cp .env.example .env
+# Edit .env with your bot token
+npm start
 ```
 
-### 5. Update Configuration
-Update the package address in:
-- `.env` → `APTPAY_PACKAGE_ADDRESS`
-- `frontend/src/config.ts`
-- Any deployment scripts
+## 🎪 Running the Demo
 
-## ⚙️ Contract Initialization
-
-### 1. Initialize Core Modules
+### Complete Payroll Demo
 ```bash
-# Get your account address
-ACCOUNT=$(aptos config show-profiles --profile aptpay-deployer | grep account | awk '{print $2}')
-
-# Initialize Access Control (admin, signers, threshold)
-aptos move run \
-  --function-id "$ACCOUNT::access_control::initialize" \
-  --args address:["$ACCOUNT"] u64:1 \
-  --profile aptpay-deployer
-
-# Initialize other modules
-aptos move run --function-id "$ACCOUNT::payroll_module::initialize" --profile aptpay-deployer
-aptos move run --function-id "$ACCOUNT::treasury_module::initialize" --profile aptpay-deployer
-aptos move run --function-id "$ACCOUNT::forex_module::initialize" --profile aptpay-deployer
-aptos move run --function-id "$ACCOUNT::compliance_module::initialize" --profile aptpay-deployer
+node scripts/run-payroll-demo.js
 ```
 
-### 2. Set Up Roles and Permissions
+This demonstrates:
+- Treasury balance check
+- Forex optimization
+- Parallel payroll execution
+- Cross-border payments
+- Performance metrics
+
+### Frontend Demo
+1. Open `http://localhost:3000`
+2. Navigate through different sections:
+   - Dashboard: Overview and statistics
+   - Payroll Manager: Employee management
+   - Treasury Overview: Fund management
+   - Forex Module: Currency exchange
+   - Settings: Configuration
+
+### Telegram Bot Demo
+1. Start a chat with your bot
+2. Use `/start` to see the main menu
+3. Try commands like:
+   - `/payroll` - Payroll management
+   - `/treasury` - Treasury overview
+   - `/employees` - Employee list
+   - `/help` - Available commands
+
+## 📊 Demo Data
+
+The demo includes:
+- **3 Demo Employees** across 3 countries
+- **$100,000 USDC** treasury balance
+- **$14,700** monthly payroll
+- **4.2% APY** yield generation
+- **3 Supported currencies** (USDC, EURc, GBPc)
+
+## 🔍 Verification
+
+### Contract Verification
 ```bash
-# Grant payroll manager role to admin
-aptos move run \
-  --function-id "$ACCOUNT::access_control::grant_role" \
-  --args address:$ACCOUNT u8:1 \
-  --profile aptpay-deployer
-
-# Grant treasury manager role to admin
-aptos move run \
-  --function-id "$ACCOUNT::access_control::grant_role" \
-  --args address:$ACCOUNT u8:2 \
-  --profile aptpay-deployer
+cd contracts
+aptos move view --function-id <DEPLOYED_ADDRESS>::payroll_module_no_time::get_employee_count
 ```
 
-## 🖥️ Frontend Deployment
+### Frontend Verification
+- Check dashboard loads correctly
+- Verify employee data displays
+- Test treasury operations
+- Confirm forex rates show
 
-### 1. Update Configuration
+### Bot Verification
+- Send `/start` to bot
+- Verify menu appears
+- Test basic commands
+- Check error handling
+
+## 🛠️ Configuration
+
+### Frontend Configuration
 Update `frontend/src/config.ts`:
 ```typescript
-export const APTPAY_CONFIG = {
-  packageAddress: "0x<your-package-address>",
-  network: "devnet", // or "testnet", "mainnet"
-  nodeUrl: "https://fullnode.devnet.aptoslabs.com/v1",
-  faucetUrl: "https://faucet.devnet.aptoslabs.com"
+export const CONFIG = {
+  CONTRACT_ADDRESS: 'YOUR_DEPLOYED_ADDRESS',
+  NETWORK: 'devnet',
+  NODE_URL: 'https://fullnode.devnet.aptoslabs.com'
 };
 ```
 
-### 2. Build and Run Frontend
-```bash
-cd frontend
-
-# Development server
-npm run dev
-
-# Production build
-npm run build
-npm run preview
+### Bot Configuration
+Update `telegram-bot/.env`:
+```env
+TELEGRAM_BOT_TOKEN=your_bot_token
+APTOS_MODULE_ADDRESS=your_deployed_address
+ADMIN_CHAT_IDS=your_chat_ids
 ```
 
-### 3. Deploy to Vercel/Netlify
-```bash
-# For Vercel
-npm i -g vercel
-vercel --prod
+## 📈 Performance Metrics
 
-# For Netlify
-npm run build
-# Upload dist/ folder to Netlify
-```
+The demo showcases:
+- **Parallel Processing**: 1000+ employees supported
+- **Speed**: 3-minute execution vs 7-day traditional
+- **Cost Efficiency**: 0.5-1% vs 5-15% traditional
+- **Yield Generation**: 4.2% APY on treasury
+- **Cross-Border**: Multi-currency support
+- **Security**: Multi-sig + Move safety
 
-## 🎪 Demo Environment Setup
-
-### 1. Run Demo Setup
-```bash
-# Set up demo environment with sample data
-npm run setup-demo
-```
-
-### 2. Demo Payroll Execution
-```bash
-# Execute a complete payroll demo
-npm run demo-payroll
-```
-
-### 3. Access Demo Interface
-- **Web Dashboard**: http://localhost:3000
-- **API Endpoints**: http://localhost:8080/api
-- **Telegram Bot**: @APTpayDemoBot (if configured)
-
-## 🔧 Advanced Configuration
-
-### Custom Yield Strategies
-```bash
-# Add custom yield strategy
-aptos move run \
-  --function-id "$ACCOUNT::treasury_module::set_yield_strategy" \
-  --args u8:2 \
-  --profile aptpay-deployer
-```
-
-### Currency Pair Setup
-```bash
-# Add new currency pair
-aptos move run \
-  --function-id "$ACCOUNT::forex_module::add_currency_pair" \
-  --args string:USDC string:JPYc u64:1000000 u64:1000000000000 u64:25 \
-  --profile aptpay-deployer
-```
-
-### Compliance Configuration
-```bash
-# Set up KYC requirements
-aptos move run \
-  --function-id "$ACCOUNT::compliance_module::submit_kyc" \
-  --args string:US u8:2 bytes:[] \
-  --profile aptpay-deployer
-```
-
-## 📊 Monitoring and Analytics
-
-### 1. Event Monitoring
-```bash
-# Monitor payroll events
-aptos account list --profile aptpay-deployer --query events
-
-# Watch for specific events
-aptos account show $ACCOUNT --profile aptpay-deployer
-```
-
-### 2. Treasury Analytics
-```bash
-# Get treasury performance
-aptos move view \
-  --function-id "$ACCOUNT::treasury_module::get_treasury_balance" \
-  --profile aptpay-deployer
-
-# Get current APY
-aptos move view \
-  --function-id "$ACCOUNT::treasury_module::get_current_apy" \
-  --profile aptpay-deployer
-```
-
-### 3. System Health Checks
-```bash
-# Check system status
-aptos move view \
-  --function-id "$ACCOUNT::access_control::is_emergency_locked" \
-  --profile aptpay-deployer
-
-# Employee count
-aptos move view \
-  --function-id "$ACCOUNT::payroll_module::get_employee_count" \
-  --profile aptpay-deployer
-```
-
-## 🔐 Security Best Practices
-
-### 1. Multi-Signature Setup
-```bash
-# Configure 2-of-3 multi-sig
-aptos move run \
-  --function-id "$ACCOUNT::access_control::initialize" \
-  --args address:["$ADMIN1","$ADMIN2","$ADMIN3"] u64:2 \
-  --profile aptpay-deployer
-```
-
-### 2. Emergency Procedures
-```bash
-# Emergency pause (if needed)
-aptos move run \
-  --function-id "$ACCOUNT::access_control::emergency_pause" \
-  --profile emergency-contact
-
-# Emergency fund recovery
-aptos move run \
-  --function-id "$ACCOUNT::treasury_module::emergency_withdraw" \
-  --args u64:amount string:currency \
-  --profile emergency-contact
-```
-
-### 3. Access Control Management
-```bash
-# Rotate admin keys
-aptos move run \
-  --function-id "$ACCOUNT::access_control::rotate_admin_keys" \
-  --profile aptpay-deployer
-
-# Revoke compromised roles
-aptos move run \
-  --function-id "$ACCOUNT::access_control::revoke_role" \
-  --args address:$COMPROMISED_USER u8:$ROLE \
-  --profile aptpay-deployer
-```
-
-## 🚨 Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues
 
-**1. Compilation Errors**
-```bash
-# Update dependencies
-aptos move clean
-aptos move compile --profile aptpay-deployer
-```
+1. **Contract Deployment Fails**
+   - Check Aptos CLI version
+   - Verify network connectivity
+   - Ensure sufficient account balance
 
-**2. Transaction Failures**
-```bash
-# Check account balance
-aptos account list --profile aptpay-deployer --query balance
+2. **Frontend Won't Start**
+   - Check Node.js version
+   - Clear npm cache: `npm cache clean --force`
+   - Delete node_modules and reinstall
 
-# Fund account if needed
-aptos account fund-with-faucet --profile aptpay-deployer
-```
+3. **Bot Not Responding**
+   - Verify bot token is correct
+   - Check network connectivity
+   - Review bot logs for errors
 
-**3. Module Not Found Errors**
-```bash
-# Verify deployment
-aptos account show $ACCOUNT --profile aptpay-deployer
+4. **Tests Failing**
+   - Ensure all dependencies installed
+   - Check Move.toml configuration
+   - Verify Aptos CLI setup
 
-# Check module address
-aptos move view --function-id "$ACCOUNT::payroll_module::get_employee_count"
-```
+### Getting Help
 
-**4. Permission Denied**
-```bash
-# Check roles
-aptos move view \
-  --function-id "$ACCOUNT::access_control::has_role" \
-  --args address:$USER u8:$ROLE
-```
+- Check the [README.md](README.md) for detailed information
+- Review [API documentation](docs/api-reference.md)
+- Join our [Discord community](https://discord.gg/aptpay)
+- Submit issues on [GitHub](https://github.com/your-username/aptos-aptpay/issues)
 
-### Network Issues
-```bash
-# Test network connectivity
-curl -X GET "https://fullnode.devnet.aptoslabs.com/v1/"
+## 🎯 Next Steps
 
-# Switch networks
-export APTOS_NETWORK=testnet
-aptos config set-profile --profile aptpay-deployer
-```
+After successful deployment:
 
-## 📈 Production Deployment
+1. **Customize Configuration**: Update settings for your needs
+2. **Add Real Employees**: Replace demo data with actual employees
+3. **Connect Real Wallet**: Use production wallet instead of demo
+4. **Scale Testing**: Test with larger employee counts
+5. **Production Deployment**: Deploy to mainnet when ready
 
-### 1. Mainnet Preparation
-- Complete security audit
-- Set up monitoring infrastructure
-- Configure production wallets
-- Establish emergency procedures
+## 🚀 Production Deployment
 
-### 2. Mainnet Deployment
-```bash
-# Deploy to mainnet
-./scripts/deploy-contracts.sh mainnet aptpay-mainnet
+For production deployment:
 
-# Verify deployment
-aptos move view --function-id "$MAINNET_ADDRESS::payroll_module::get_employee_count"
-```
-
-### 3. Go-Live Checklist
-- [ ] All contracts deployed and verified
-- [ ] Treasury funded with initial capital
-- [ ] Employee data imported
-- [ ] Compliance framework configured
-- [ ] Multi-sig wallets set up
-- [ ] Emergency procedures tested
-- [ ] Frontend deployed and accessible
-- [ ] Monitoring systems active
-
-## 🔗 Useful Commands
-
-```bash
-# Quick development cycle
-npm run compile && npm run test && npm run deploy
-
-# Full system test
-npm run setup-demo && npm run demo-payroll
-
-# Check system health
-aptos account list --profile aptpay-deployer
-
-# View transaction history
-aptos account show $ACCOUNT --profile aptpay-deployer
-```
-
-## 📞 Support
-
-- **Documentation**: https://docs.aptpay.finance
-- **GitHub Issues**: https://github.com/aptpay/aptpay/issues
-- **Discord**: https://discord.gg/aptpay
-- **Email**: support@aptpay.finance
+1. **Security Audit**: Complete security review
+2. **Mainnet Deployment**: Deploy to Aptos mainnet
+3. **Domain Setup**: Configure custom domain
+4. **SSL Certificate**: Set up HTTPS
+5. **Monitoring**: Implement production monitoring
+6. **Backup**: Set up automated backups
 
 ---
 
-*Built with ❤️ for the global workforce on Aptos blockchain*
+**🎉 Congratulations!** You've successfully deployed APTpay. The platform is now ready to revolutionize cross-border payroll with instant, low-cost, yield-optimized payments on Aptos blockchain.
+
+*Built with ❤️ for the global workforce*

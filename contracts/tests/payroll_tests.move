@@ -2,15 +2,16 @@
 module aptpay::payroll_tests {
     use std::signer;
     use std::vector;
-    use aptos_framework::account;
-    use aptos_framework::coin;
-    use aptos_framework::aptos_coin::{Self, AptosCoin};
+    use aptos_framework::timestamp;
     use aptpay::payroll_module;
     use aptpay::access_control;
 
     #[test(admin = @aptpay, employee = @0x123)]
     public fun test_initialize_payroll(admin: &signer, employee: &signer) {
         let admin_addr = signer::address_of(admin);
+        
+        // Initialize timestamp for testing
+        timestamp::set_time_has_started_for_testing(admin);
         
         // Initialize access control first
         let signers = vector::singleton(admin_addr);
@@ -69,7 +70,7 @@ module aptpay::payroll_tests {
         let addresses = vector[employee1_addr, employee2_addr];
         let amounts = vector[3000000000, 4000000000];
         
-        let batch_id = payroll_module::create_employee_batch(
+        payroll_module::create_employee_batch(
             admin,
             addresses,
             amounts,
@@ -77,8 +78,7 @@ module aptpay::payroll_tests {
         );
         
         // Verify batch was created
-        assert!(batch_id == 1, 3);
-        assert!(payroll_module::get_batch_status(batch_id) == 0, 4); // PENDING status
+        assert!(payroll_module::get_batch_status(1) == 0, 4); // PENDING status
     }
 
     #[test(admin = @aptpay)]

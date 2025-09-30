@@ -24,8 +24,13 @@ export class APTpayClient {
   // Account Management
   async getAccountBalance(address: string): Promise<number> {
     try {
-      const balance = await this.client.getAccountBalance(address);
-      return parseInt(balance);
+      const resources = await this.client.getAccountResources(address);
+      const coinResource = resources.find((r) => r.type === "0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>");
+      if (coinResource) {
+        const balance = (coinResource.data as any).coin.value;
+        return parseInt(balance);
+      }
+      return 0;
     } catch (error) {
       console.error("Error getting account balance:", error);
       return 0;

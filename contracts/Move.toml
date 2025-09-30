@@ -20,7 +20,7 @@ rev = "mainnet"
 subdir = "aptos-move/framework/move-stdlib"
 
 [addresses]
-aptpay = "0xaa7c8dabab649d2bebfb17d8463c5a395a078ca09919da2c9cf26763997e4ad7"
+aptpay = "0x7ccdab8fecaff6c2954dedcf2c82fcdf9eefd369f105ca45c1897b783bd2202b"
 std = "0x1"
 aptos_framework = "0x1"
 aptos_std = "0x1"

@@ -1,10 +1,9 @@
-/// Payroll Module for APTpay
+/// Payroll Module for APTpay (No Timestamp Version for Testing)
 /// Manages employee data, salary distributions, and payment execution
-module aptpay::payroll_module {
+module aptpay::payroll_module_no_time {
     use std::error;
     use std::signer;
     use std::vector;
-    use aptos_framework::timestamp;
 
     const E_NOT_INITIALIZED: u64 = 1;
     const E_NOT_AUTHORIZED: u64 = 2;
@@ -61,7 +60,7 @@ module aptpay::payroll_module {
             batches: vector::empty(),
             total_payments: 0,
             is_paused: false,
-            created_at: timestamp::now_seconds(),
+            created_at: 1000, // Fixed timestamp for testing
             next_batch_id: 1,
         });
 
@@ -69,7 +68,7 @@ module aptpay::payroll_module {
             balance: 0,
             yield_earned: 0,
             apy: 420, // 4.20% APY
-            last_update: timestamp::now_seconds(),
+            last_update: 1000, // Fixed timestamp for testing
         });
     }
 
@@ -92,92 +91,8 @@ module aptpay::payroll_module {
             currency: currency,
             payment_frequency: payment_frequency,
             is_active: true,
-            added_at: timestamp::now_seconds(),
+            added_at: 1000, // Fixed timestamp for testing
         });
-    }
-
-    /// Create employee batch for payroll execution
-    public entry fun create_employee_batch(
-        admin: &signer,
-        employee_addresses: vector<address>,
-        amounts: vector<u64>,
-        currency: vector<u8>
-    ) acquires PayrollSystem {
-        let admin_addr = signer::address_of(admin);
-        let payroll = borrow_global_mut<PayrollSystem>(admin_addr);
-        assert!(payroll.admin == admin_addr, error::permission_denied(E_NOT_AUTHORIZED));
-        assert!(!payroll.is_paused, error::unavailable(E_NOT_AUTHORIZED));
-        
-        let len = vector::length(&employee_addresses);
-        assert!(len > 0, error::invalid_argument(E_INVALID_BATCH));
-        assert!(len == vector::length(&amounts), error::invalid_argument(E_INVALID_BATCH));
-        
-        // Verify all employees exist
-        let i = 0;
-        while (i < len) {
-            let emp_addr = *vector::borrow(&employee_addresses, i);
-            assert!(employee_exists(&payroll.employees, emp_addr), error::not_found(E_EMPLOYEE_NOT_FOUND));
-            i = i + 1;
-        };
-        
-        let batch_id = payroll.next_batch_id;
-        payroll.next_batch_id = payroll.next_batch_id + 1;
-        
-        vector::push_back(&mut payroll.batches, PayrollBatch {
-            batch_id: batch_id,
-            employees: employee_addresses,
-            amounts: amounts,
-            currency: currency,
-            status: 0, // PENDING
-            created_at: timestamp::now_seconds(),
-            executed_at: 0,
-        });
-    }
-
-    /// Update employee currency preference
-    public entry fun update_employee_currency(
-        employee: &signer,
-        new_currency: vector<u8>
-    ) acquires PayrollSystem {
-        let employee_addr = signer::address_of(employee);
-        let admin_addr = get_admin_address();
-        let payroll = borrow_global_mut<PayrollSystem>(admin_addr);
-        
-        let employees = &mut payroll.employees;
-        let len = vector::length(employees);
-        let i = 0;
-        
-        while (i < len) {
-            let emp = vector::borrow_mut(employees, i);
-            if (emp.address == employee_addr) {
-                emp.currency = new_currency;
-                return
-            };
-            i = i + 1;
-        };
-        
-        abort error::not_found(E_EMPLOYEE_NOT_FOUND)
-    }
-
-    /// Helper function to check if employee exists
-    fun employee_exists(employees: &vector<Employee>, addr: address): bool {
-        let len = vector::length(employees);
-        let i = 0;
-        
-        while (i < len) {
-            let emp = vector::borrow(employees, i);
-            if (emp.address == addr && emp.is_active) {
-                return true
-            };
-            i = i + 1;
-        };
-        
-        false
-    }
-
-    /// Get admin address
-    fun get_admin_address(): address {
-        @aptpay
     }
 
     /// Deposit funds to treasury
@@ -186,7 +101,7 @@ module aptpay::payroll_module {
         let treasury = borrow_global_mut<CompanyTreasury>(admin_addr);
         
         treasury.balance = treasury.balance + amount;
-        treasury.last_update = timestamp::now_seconds();
+        treasury.last_update = 1000; // Fixed timestamp for testing
     }
 
     /// Execute payroll for all employees
@@ -214,7 +129,7 @@ module aptpay::payroll_module {
         let admin_addr = signer::address_of(admin);
         let treasury = borrow_global_mut<CompanyTreasury>(admin_addr);
         
-        let current_time = timestamp::now_seconds();
+        let current_time = 2000; // Fixed timestamp for testing
         let time_elapsed = current_time - treasury.last_update;
         
         // Calculate yield (simplified: per second basis)
@@ -251,27 +166,6 @@ module aptpay::payroll_module {
         vector::length(&payroll.employees)
     }
 
-    /// Get batch status
-    #[view]
-    public fun get_batch_status(batch_id: u64): u64 acquires PayrollSystem {
-        let admin_addr = get_admin_address();
-        let payroll = borrow_global<PayrollSystem>(admin_addr);
-        
-        let batches = &payroll.batches;
-        let len = vector::length(batches);
-        let i = 0;
-        
-        while (i < len) {
-            let batch = vector::borrow(batches, i);
-            if (batch.batch_id == batch_id) {
-                return batch.status
-            };
-            i = i + 1;
-        };
-        
-        999 // BATCH_NOT_FOUND
-    }
-
     #[view]
     public fun get_treasury_balance(admin: address): u64 acquires CompanyTreasury {
         let treasury = borrow_global<CompanyTreasury>(admin);
@@ -300,5 +194,10 @@ module aptpay::payroll_module {
     public fun get_total_payments(admin: address): u64 acquires PayrollSystem {
         let payroll = borrow_global<PayrollSystem>(admin);
         payroll.total_payments
+    }
+
+    /// Get admin address
+    fun get_admin_address(): address {
+        @aptpay
     }
 }

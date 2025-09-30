@@ -36,10 +36,7 @@ module aptpay::forex_tests {
         forex_module::add_currency_pair(
             admin,
             b"USDC",
-            b"JPYc",
-            1000000,    // min 1 USDC
-            1000000000000, // max 1M USDC
-            25          // 0.25% fee
+            b"JPYc"
         );
         
         // Test should complete without errors

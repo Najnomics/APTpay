@@ -2,212 +2,244 @@
 
 /**
  * APTpay Payroll Demo Script
- * 
- * This script demonstrates a complete payroll cycle:
- * - Loading employee data
- * - Creating payroll batch
- * - Executing payments with FX optimization
- * - Generating compliance reports
+ * Demonstrates the complete payroll execution flow
  */
 
-class PayrollDemo {
+const fs = require('fs');
+const path = require('path');
+
+// Demo configuration
+const DEMO_CONFIG = {
+  contractAddress: '0xaa7c8dabab649d2bebfb17d8463c5a395a078ca09919da2c9cf26763997e4ad7',
+  network: 'devnet',
+  employees: [
+    {
+      name: 'Alice Johnson',
+      address: '0x1234567890abcdef1234567890abcdef12345678',
+      salary: 5000,
+      currency: 'USDC',
+      country: 'United States'
+    },
+    {
+      name: 'Bob Smith',
+      address: '0x2345678901bcdef12345678901bcdef1234567890',
+      salary: 4500,
+      currency: 'USDC',
+      country: 'Germany'
+    },
+    {
+      name: 'Carol Davis',
+      address: '0x3456789012cdef123456789012cdef1234567890',
+      salary: 5200,
+      currency: 'USDC',
+      country: 'United Kingdom'
+    }
+  ]
+};
+
+class APTpayDemo {
     constructor() {
-        this.employees = [
-            { id: 1, address: "0x123", name: "Alice Johnson", salary: 5000, currency: "USDC", location: "US" },
-            { id: 2, address: "0x456", name: "Bob Schmidt", salary: 4500, currency: "EURc", location: "DE" },
-            { id: 3, address: "0x789", name: "Charlie Brown", salary: 6000, currency: "USDC", location: "CA" },
-            { id: 4, address: "0xabc", name: "Diana Patel", salary: 3800, currency: "USDC", location: "IN" },
-            { id: 5, address: "0xdef", name: "Eva Chen", salary: 5200, currency: "EURc", location: "NL" },
-        ];
-        
-        this.exchangeRates = {
-            "USDC/EURc": 0.85,
-            "EURc/USDC": 1.18
-        };
-    }
+    this.startTime = Date.now();
+    this.results = {
+      success: false,
+      transactionHash: null,
+      totalAmount: 0,
+      employeeCount: 0,
+      executionTime: 0,
+      gasUsed: 0,
+      payments: [],
+      errors: []
+    };
+  }
 
-    async runPayrollDemo() {
-        console.log("🚀 APTpay Payroll Demo");
-        console.log("=" .repeat(50));
-        
-        try {
-            // Step 1: Display employee roster
-            await this.displayEmployeeRoster();
-            
-            // Step 2: Calculate payroll requirements
-            await this.calculatePayrollRequirements();
-            
-            // Step 3: Optimize treasury and FX
-            await this.optimizeTreasuryAndFX();
-            
-            // Step 4: Execute payroll batch
-            await this.executePayrollBatch();
-            
-            // Step 5: Generate compliance reports
-            await this.generateComplianceReports();
-            
-            // Step 6: Display results
-            await this.displayResults();
-            
-            console.log("✅ Payroll demo completed successfully!");
-            
+  async runDemo() {
+    console.log('🎪 APTpay Payroll Demo');
+    console.log('====================');
+    console.log('');
+
+    try {
+      await this.showDemoOverview();
+      await this.simulateTreasuryCheck();
+      await this.simulateForexOptimization();
+      await this.simulatePayrollExecution();
+      await this.showResults();
         } catch (error) {
-            console.error("❌ Payroll demo failed:", error.message);
-            process.exit(1);
-        }
+      console.error('❌ Demo failed:', error.message);
+      this.results.errors.push(error.message);
     }
 
-    async displayEmployeeRoster() {
-        console.log("\n👥 Employee Roster");
-        console.log("-" .repeat(30));
-        
-        this.employees.forEach(emp => {
-            console.log(`  ${emp.name} (${emp.location})`);
-            console.log(`    Address: ${emp.address}`);
-            console.log(`    Salary: ${emp.salary.toLocaleString()} ${emp.currency}`);
-            console.log("");
-        });
-        
-        console.log(`Total Employees: ${this.employees.length}`);
-    }
+    return this.results;
+  }
 
-    async calculatePayrollRequirements() {
-        console.log("\n💰 Payroll Requirements");
-        console.log("-" .repeat(30));
-        
-        const usdcTotal = this.employees
-            .filter(emp => emp.currency === "USDC")
-            .reduce((sum, emp) => sum + emp.salary, 0);
-            
-        const eurcTotal = this.employees
-            .filter(emp => emp.currency === "EURc")
-            .reduce((sum, emp) => sum + emp.salary, 0);
-        
-        console.log(`  USDC Required: ${usdcTotal.toLocaleString()} USDC`);
-        console.log(`  EURc Required: ${eurcTotal.toLocaleString()} EURc`);
-        console.log(`  Total USD Equivalent: ${(usdcTotal + (eurcTotal * this.exchangeRates["EURc/USDC"])).toLocaleString()}`);
-        
-        this.payrollRequirements = { usdcTotal, eurcTotal };
-    }
+  async showDemoOverview() {
+    console.log('📊 Demo Overview');
+    console.log('---------------');
+    console.log(`📍 Contract: ${DEMO_CONFIG.contractAddress}`);
+    console.log(`🌐 Network: ${DEMO_CONFIG.network}`);
+    console.log(`👥 Employees: ${DEMO_CONFIG.employees.length}`);
+    console.log(`💰 Total Payroll: ${this.calculateTotalPayroll().toLocaleString()} USDC`);
+    console.log(`🌍 Countries: ${new Set(DEMO_CONFIG.employees.map(e => e.country)).size}`);
+    console.log('');
+  }
 
-    async optimizeTreasuryAndFX() {
-        console.log("\n📈 Treasury & FX Optimization");
-        console.log("-" .repeat(30));
-        
-        // Simulate treasury withdrawal from yield strategy
-        const treasuryBalance = 100000; // $100k in treasury
-        const yieldEarned = (treasuryBalance * 0.042) / 12; // Monthly yield at 4.2% APY
-        
-        console.log(`  Treasury Balance: $${treasuryBalance.toLocaleString()}`);
-        console.log(`  Monthly Yield Earned: $${yieldEarned.toFixed(2)}`);
-        console.log(`  Withdrawing from yield strategy...`);
-        
-        // Simulate FX optimization
-        const eurcNeeded = this.payrollRequirements.eurcTotal;
-        const usdcForFX = eurcNeeded * this.exchangeRates["EURc/USDC"];
-        const fxFee = usdcForFX * 0.003; // 0.3% FX fee
-        
-        console.log(`  FX Conversion: ${usdcForFX.toFixed(2)} USDC → ${eurcNeeded} EURc`);
-        console.log(`  FX Fee: $${fxFee.toFixed(2)} (0.3%)`);
-        console.log(`  DEX Used: Merkle Trade (best rate)`);
-        
-        this.fxDetails = { usdcForFX, fxFee };
+  async simulateTreasuryCheck() {
+    console.log('💰 Treasury Check');
+    console.log('----------------');
+    
+    const treasuryBalance = 100000; // 100K USDC
+    const totalPayroll = this.calculateTotalPayroll();
+    const availableBalance = treasuryBalance * 0.95; // 95% available
+    
+    console.log(`💳 Treasury Balance: ${treasuryBalance.toLocaleString()} USDC`);
+    console.log(`💸 Required for Payroll: ${totalPayroll.toLocaleString()} USDC`);
+    console.log(`✅ Available Balance: ${availableBalance.toLocaleString()} USDC`);
+    
+    if (availableBalance >= totalPayroll) {
+      console.log('✅ Treasury has sufficient funds for payroll');
+    } else {
+      throw new Error('Insufficient treasury funds');
     }
+    console.log('');
+  }
 
-    async executePayrollBatch() {
-        console.log("\n⚡ Executing Payroll Batch");
-        console.log("-" .repeat(30));
-        
-        console.log("  Creating payroll batch...");
-        console.log("  Batch ID: 2025-001");
-        console.log("  Processing payments in parallel...");
-        
-        // Simulate parallel payment processing
-        for (let i = 0; i < this.employees.length; i++) {
-            const emp = this.employees[i];
-            await this.simulatePayment(emp, i + 1);
-        }
-        
-        console.log("  ✅ All payments processed successfully");
-    }
+  async simulateForexOptimization() {
+    console.log('🌍 Forex Optimization');
+    console.log('--------------------');
+    
+    // Simulate rate queries across DEXs
+    const rates = {
+      'USDC/EURc': { merkle: 0.920, hyperion: 0.918, tapp: 0.915 },
+      'USDC/GBPc': { merkle: 0.787, hyperion: 0.785, tapp: 0.783 },
+      'USDC/JPYc': { merkle: 148.2, hyperion: 148.5, tapp: 148.8 }
+    };
 
-    async simulatePayment(employee, index) {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                console.log(`    Payment ${index}/5: ${employee.salary} ${employee.currency} → ${employee.address} ✅`);
-                resolve();
-            }, 200 * index); // Simulate processing time
-        });
+    console.log('🔍 Querying DEX rates...');
+    await this.sleep(1000);
+    
+    for (const [pair, dexRates] of Object.entries(rates)) {
+      const bestDex = Object.keys(dexRates).reduce((a, b) => 
+        dexRates[a] > dexRates[b] ? a : b
+      );
+      const bestRate = dexRates[bestDex];
+      console.log(`📈 ${pair}: ${bestRate} (via ${bestDex})`);
     }
+    
+    console.log('⚡ Parallel rate optimization complete');
+    console.log('');
+  }
 
-    async generateComplianceReports() {
-        console.log("\n🛡️ Compliance & Reporting");
-        console.log("-" .repeat(30));
-        
-        console.log("  Generating audit trail...");
-        console.log("  KYC Status: All employees verified ✅");
-        console.log("  AML Screening: No flags detected ✅");
-        console.log("  Tax Reporting: Multi-jurisdiction reports generated ✅");
-        
-        // Simulate compliance checks
-        const complianceData = {
-            totalTransactions: this.employees.length,
-            totalVolume: this.payrollRequirements.usdcTotal + (this.payrollRequirements.eurcTotal * this.exchangeRates["EURc/USDC"]),
-            jurisdictions: [...new Set(this.employees.map(emp => emp.location))],
-            amlFlags: 0,
-            kycCompliance: "100%"
-        };
-        
-        console.log(`  Transactions: ${complianceData.totalTransactions}`);
-        console.log(`  Volume: $${complianceData.totalVolume.toLocaleString()}`);
-        console.log(`  Jurisdictions: ${complianceData.jurisdictions.join(", ")}`);
-        console.log(`  AML Flags: ${complianceData.amlFlags}`);
-        console.log(`  KYC Compliance: ${complianceData.kycCompliance}`);
+  async simulatePayrollExecution() {
+    console.log('💸 Payroll Execution');
+    console.log('-------------------');
+    
+    const totalAmount = this.calculateTotalPayroll();
+    const employeeCount = DEMO_CONFIG.employees.length;
+    
+    console.log(`🚀 Executing payroll for ${employeeCount} employees...`);
+    console.log(`💰 Total amount: ${totalAmount.toLocaleString()} USDC`);
+    
+    // Simulate parallel processing
+    console.log('⚡ Processing payments in parallel...');
+    await this.sleep(2000);
+    
+    // Simulate individual payments
+    for (const employee of DEMO_CONFIG.employees) {
+      console.log(`💳 Paying ${employee.name}: ${employee.salary.toLocaleString()} ${employee.currency}`);
+      await this.sleep(500);
+      
+      this.results.payments.push({
+        employee: employee.name,
+        amount: employee.salary,
+        currency: employee.currency,
+        address: employee.address,
+        status: 'completed'
+      });
     }
+    
+    // Generate mock transaction hash
+    this.results.transactionHash = this.generateTransactionHash();
+    this.results.totalAmount = totalAmount;
+    this.results.employeeCount = employeeCount;
+    this.results.executionTime = Date.now() - this.startTime;
+    this.results.gasUsed = 0.003; // Mock gas usage
+    this.results.success = true;
+    
+    console.log('✅ All payments completed successfully');
+    console.log('');
+  }
 
-    async displayResults() {
-        console.log("\n📊 Payroll Execution Results");
-        console.log("=" .repeat(50));
-        
-        const totalUsdEquivalent = this.payrollRequirements.usdcTotal + 
-            (this.payrollRequirements.eurcTotal * this.exchangeRates["EURc/USDC"]);
-        
-        const traditionalCost = totalUsdEquivalent * 0.15; // 15% traditional fees
-        const aptpayCost = this.fxDetails.fxFee + (totalUsdEquivalent * 0.002); // 0.3% FX + 0.2% platform
-        const savings = traditionalCost - aptpayCost;
-        
-        console.log("\n💸 Cost Comparison:");
-        console.log(`  Traditional Payroll: $${traditionalCost.toFixed(2)} (15% fees)`);
-        console.log(`  APTpay Platform: $${aptpayCost.toFixed(2)} (0.5% total fees)`);
-        console.log(`  Cost Savings: $${savings.toFixed(2)} (${((savings/traditionalCost)*100).toFixed(1)}%)`);
-        
-        console.log("\n⚡ Performance:");
-        console.log(`  Processing Time: 3 minutes (vs 3-7 days traditional)`);
-        console.log(`  Success Rate: 100% (5/5 payments)`);
-        console.log(`  Parallel Processing: ✅ Enabled`);
-        
-        console.log("\n🏦 Treasury Impact:");
-        console.log(`  Yield Earned: $${((100000 * 0.042) / 12).toFixed(2)} this month`);
-        console.log(`  Capital Efficiency: 98% (2% emergency reserve)`);
-        console.log(`  Next Yield Compound: In 24 hours`);
-        
-        console.log("\n🌍 Global Reach:");
-        console.log(`  Countries Served: ${[...new Set(this.employees.map(emp => emp.location))].length}`);
-        console.log(`  Currencies: 2 (USDC, EURc)`);
-        console.log(`  Compliance: Multi-jurisdiction ✅`);
-        
-        console.log("\n🎯 Next Steps:");
-        console.log("  • Schedule next payroll cycle");
-        console.log("  • Review treasury yield performance");
-        console.log("  • Update employee preferences");
-        console.log("  • Generate monthly compliance reports");
+  async showResults() {
+    console.log('📊 Demo Results');
+    console.log('===============');
+    
+    if (this.results.success) {
+      console.log('✅ Payroll execution completed successfully!');
+      console.log('');
+      console.log('📋 Transaction Details:');
+      console.log(`🔗 Transaction Hash: ${this.results.transactionHash}`);
+      console.log(`💰 Total Amount: ${this.results.totalAmount.toLocaleString()} USDC`);
+      console.log(`👥 Employees Paid: ${this.results.employeeCount}`);
+      console.log(`⏱️  Execution Time: ${this.results.executionTime}ms`);
+      console.log(`⛽ Gas Used: ${this.results.gasUsed} APT`);
+      console.log('');
+      
+      console.log('💳 Individual Payments:');
+      this.results.payments.forEach((payment, index) => {
+        console.log(`${index + 1}. ${payment.employee}: ${payment.amount.toLocaleString()} ${payment.currency} ✅`);
+      });
+      console.log('');
+      
+      console.log('🎯 Key Benefits Demonstrated:');
+      console.log('• ⚡ Parallel processing (1000+ employees supported)');
+      console.log('• 🌍 Cross-border payments (3 countries)');
+      console.log('• 💰 Cost efficiency (0.5-1% vs 5-15% traditional)');
+      console.log('• ⏱️  Speed (3 minutes vs 7 days traditional)');
+      console.log('• 🔒 Security (multi-sig + Move safety)');
+      console.log('• 📈 Yield generation (4.2% APY on treasury)');
+      console.log('');
+      
+      console.log('🚀 APTpay Demo Complete!');
+      console.log('Ready to revolutionize global payroll! 🌍⚡');
+    } else {
+      console.log('❌ Demo failed');
+      console.log('Errors:', this.results.errors);
     }
+  }
+
+  calculateTotalPayroll() {
+    return DEMO_CONFIG.employees.reduce((sum, emp) => sum + emp.salary, 0);
+  }
+
+  generateTransactionHash() {
+    const chars = '0123456789abcdef';
+    let hash = '0x';
+    for (let i = 0; i < 64; i++) {
+      hash += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return hash;
+  }
+
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 }
 
-// Run demo if called directly
+// Run the demo
+async function main() {
+  const demo = new APTpayDemo();
+  const results = await demo.runDemo();
+  
+  // Save results to file
+  const resultsFile = path.join(__dirname, '../demo-results.json');
+  fs.writeFileSync(resultsFile, JSON.stringify(results, null, 2));
+  console.log(`📄 Results saved to: ${resultsFile}`);
+  
+  process.exit(results.success ? 0 : 1);
+}
+
+// Handle command line execution
 if (require.main === module) {
-    const demo = new PayrollDemo();
-    demo.runPayrollDemo().catch(console.error);
+  main().catch(console.error);
 }
 
-module.exports = PayrollDemo;
+module.exports = APTpayDemo;

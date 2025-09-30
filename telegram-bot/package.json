@@ -1,0 +1,39 @@
+{
+  "name": "aptpay-telegram-bot",
+  "version": "1.0.0",
+  "description": "APTpay Telegram Bot for Cross-Border Payroll Management",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "telegraf": "^4.15.0",
+    "@aptos-labs/ts-sdk": "^1.20.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.0",
+    "node-cron": "^3.0.3",
+    "moment": "^2.29.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/node-cron": "^3.0.11",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0",
+    "nodemon": "^3.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "aptos",
+    "payroll",
+    "defi",
+    "cross-border"
+  ],
+  "author": "APTpay Team",
+  "license": "MIT"
+}
