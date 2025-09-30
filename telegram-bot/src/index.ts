@@ -2,6 +2,9 @@ import { Telegraf, Context } from 'telegraf';
 import dotenv from 'dotenv';
 import { showTreasury, showTreasuryAnalytics } from './commands/treasury';
 import { showHelp } from './commands/help';
+import { walletCommands } from './commands/wallet';
+import { advancedCommands } from './commands/advanced';
+import { payrollCommands } from './commands/payroll';
 import { AptosService } from './services/aptosService';
 import { PayrollService } from './services/payrollService';
 import { NotificationService } from './services/notificationService';
@@ -63,6 +66,10 @@ Use /help to see all available commands.
           { text: '🌍 Forex', callback_data: 'forex' }
         ],
         [
+          { text: '🔗 Connect Wallet', callback_data: 'connect_wallet' },
+          { text: '🤖 AI Analytics', callback_data: 'ai_analytics' }
+        ],
+        [
           { text: '⚙️ Settings', callback_data: 'settings' },
           { text: '❓ Help', callback_data: 'help' }
         ]
@@ -110,25 +117,49 @@ bot.command('treasury', async (ctx) => {
 
 // Employees command
 bot.command('employees', async (ctx) => {
-  const employees = await payrollService.getEmployeeList();
-  
-  let message = '👥 *Employee List*\n\n';
-  employees.forEach((emp, index) => {
-    message += `${index + 1}. *${emp.name}*\n`;
-    message += `   └ ${emp.role} - ${emp.salary}\n`;
-    message += `   └ Status: ${emp.status}\n\n`;
-  });
+  await payrollCommands.showEmployees(ctx);
+});
 
-  await ctx.reply(message, {
-    parse_mode: 'Markdown',
-    reply_markup: {
-      inline_keyboard: [
-        [{ text: '➕ Add Employee', callback_data: 'add_employee' }],
-        [{ text: '💼 Execute Payroll', callback_data: 'execute_payroll' }],
-        [{ text: '🔙 Back to Dashboard', callback_data: 'dashboard' }]
-      ]
-    }
-  });
+// Wallet commands
+bot.command('wallet', async (ctx) => {
+  await walletCommands.showWalletStatus(ctx);
+});
+
+bot.command('connectwallet', async (ctx) => {
+  await walletCommands.connectWallet(ctx);
+});
+
+bot.command('balance', async (ctx) => {
+  await walletCommands.showWalletBalance(ctx);
+});
+
+// Advanced commands
+bot.command('multisig', async (ctx) => {
+  await advancedCommands.multiSigManagement(ctx);
+});
+
+bot.command('ai', async (ctx) => {
+  await advancedCommands.aiAnalytics(ctx);
+});
+
+bot.command('bridge', async (ctx) => {
+  await advancedCommands.crossChainBridge(ctx);
+});
+
+bot.command('defi', async (ctx) => {
+  await advancedCommands.deFiIntegration(ctx);
+});
+
+bot.command('compliance', async (ctx) => {
+  await advancedCommands.complianceManager(ctx);
+});
+
+bot.command('emergency', async (ctx) => {
+  await advancedCommands.emergencyFeatures(ctx);
+});
+
+bot.command('api', async (ctx) => {
+  await advancedCommands.apiManagement(ctx);
 });
 
 // Callback query handler
@@ -232,7 +263,95 @@ _Last updated: ${new Date().toLocaleTimeString()}_
 
     case 'confirm_payroll':
       await ctx.answerCbQuery();
-      await notificationService.sendPayrollNotification(ctx, '36,200 USDC', 5);
+      await payrollCommands.confirmPayroll(ctx);
+      break;
+
+    // Wallet callbacks
+    case 'connect_wallet':
+      await ctx.answerCbQuery();
+      await walletCommands.connectWallet(ctx);
+      break;
+
+    case 'wallet_status':
+      await ctx.answerCbQuery();
+      await walletCommands.showWalletStatus(ctx);
+      break;
+
+    case 'wallet_balance':
+      await ctx.answerCbQuery();
+      await walletCommands.showWalletBalance(ctx);
+      break;
+
+    case 'wallet_history':
+      await ctx.answerCbQuery();
+      await walletCommands.showTransactionHistory(ctx);
+      break;
+
+    case 'wallet_settings':
+      await ctx.answerCbQuery();
+      await walletCommands.walletSettings(ctx);
+      break;
+
+    case 'wallet_help':
+      await ctx.answerCbQuery();
+      await walletCommands.walletHelp(ctx);
+      break;
+
+    // Advanced feature callbacks
+    case 'ai_analytics':
+      await ctx.answerCbQuery();
+      await advancedCommands.aiAnalytics(ctx);
+      break;
+
+    case 'multisig':
+      await ctx.answerCbQuery();
+      await advancedCommands.multiSigManagement(ctx);
+      break;
+
+    case 'bridge':
+      await ctx.answerCbQuery();
+      await advancedCommands.crossChainBridge(ctx);
+      break;
+
+    case 'defi':
+      await ctx.answerCbQuery();
+      await advancedCommands.deFiIntegration(ctx);
+      break;
+
+    case 'compliance':
+      await ctx.answerCbQuery();
+      await advancedCommands.complianceManager(ctx);
+      break;
+
+    case 'emergency':
+      await ctx.answerCbQuery();
+      await advancedCommands.emergencyFeatures(ctx);
+      break;
+
+    case 'api':
+      await ctx.answerCbQuery();
+      await advancedCommands.apiManagement(ctx);
+      break;
+
+    // Payroll callbacks
+    case 'execute_payroll':
+      await ctx.answerCbQuery();
+      await payrollCommands.executePayroll(ctx);
+      break;
+
+    case 'payroll':
+      await ctx.answerCbQuery();
+      await payrollCommands.showDashboard(ctx);
+      break;
+
+    case 'add_employee':
+      await ctx.answerCbQuery();
+      await payrollCommands.addEmployee(ctx);
+      break;
+
+    case 'forex':
+      await ctx.answerCbQuery();
+      await payrollCommands.showForex(ctx);
       break;
 
     default:

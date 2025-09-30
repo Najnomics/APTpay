@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Layout, Menu, Button, Space, Typography, Card, Row, Col, Statistic, Progress } from 'antd';
+import { Layout, Menu, Button, Space, Typography, Card, Row, Col, Statistic, Progress, Badge, Avatar, Dropdown } from 'antd';
 import { 
   DashboardOutlined, 
   TeamOutlined, 
@@ -11,13 +11,25 @@ import {
   DollarOutlined,
   GlobalOutlined,
   ThunderboltOutlined,
-  MenuOutlined
+  MenuOutlined,
+  BellOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  CrownOutlined,
+  SafetyOutlined,
+  RocketOutlined,
+  RiseOutlined
 } from '@ant-design/icons';
 import Dashboard from './components/Dashboard';
 import PayrollManager from './components/PayrollManager';
 import TreasuryOverview from './components/TreasuryOverview';
 import ForexModule from './components/ForexModule';
+import Analytics from './components/Analytics';
+import LandingPage from './components/LandingPage';
+import NotificationCenter from './components/NotificationCenter';
+import WalletConnectModal from './components/WalletConnectModal';
 import Settings from './components/Settings';
+import { walletService, WalletState } from './services/walletService';
 import './App.css';
 
 const { Header, Sider, Content } = Layout;
@@ -26,32 +38,76 @@ const { Title, Text } = Typography;
 function App() {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedKey, setSelectedKey] = useState('dashboard');
+  const [walletState, setWalletState] = useState<WalletState | null>(null);
+  const [showLanding, setShowLanding] = useState(false);
+  const [notificationVisible, setNotificationVisible] = useState(false);
+  const [walletModalVisible, setWalletModalVisible] = useState(false);
 
-  const menuItems = [
+  // Professional navigation structure
+  const menuSections = [
     {
-      key: 'dashboard',
-      icon: <DashboardOutlined />,
-      label: 'Dashboard',
+      title: 'Core Platform',
+      items: [
+        {
+          key: 'dashboard',
+          icon: <DashboardOutlined />,
+          label: 'Dashboard',
+        },
+        {
+          key: 'payroll',
+          icon: <TeamOutlined />,
+          label: 'Payroll Engine',
+        },
+        {
+          key: 'treasury',
+          icon: <BankOutlined />,
+          label: 'Treasury Management',
+        },
+        {
+          key: 'forex',
+          icon: <SwapOutlined />,
+          label: 'FX Trading',
+        },
+      ]
     },
     {
-      key: 'payroll',
-      icon: <TeamOutlined />,
-      label: 'Payroll Manager',
+      title: 'Business Intelligence',
+      items: [
+        {
+          key: 'analytics',
+          icon: <RiseOutlined />,
+          label: 'Advanced Analytics',
+        },
+      ]
     },
     {
-      key: 'treasury',
-      icon: <BankOutlined />,
-      label: 'Treasury Overview',
+      title: 'Operations',
+      items: [
+        {
+          key: 'settings',
+          icon: <SettingOutlined />,
+          label: 'System Config',
+        },
+      ]
+    }
+  ];
+
+  const userMenuItems = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: 'Profile Settings',
     },
     {
-      key: 'forex',
-      icon: <SwapOutlined />,
-      label: 'Forex Module',
+      key: 'security',
+      icon: <SafetyOutlined />,
+      label: 'Security',
     },
     {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: 'Settings',
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: 'Sign Out',
+      danger: true,
     },
   ];
 
@@ -65,6 +121,8 @@ function App() {
         return <TreasuryOverview />;
       case 'forex':
         return <ForexModule />;
+      case 'analytics':
+        return <Analytics />;
       case 'settings':
         return <Settings />;
       default:
@@ -72,98 +130,206 @@ function App() {
     }
   };
 
+  const handleWalletConnect = () => {
+    setWalletModalVisible(true);
+  };
+
+  const handleWalletConnected = (state: WalletState) => {
+    setWalletState(state);
+    setWalletModalVisible(false);
+  };
+
+  const handleWalletDisconnect = () => {
+    setWalletState(null);
+  };
+
   return (
-    <Router>
-      <Layout style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+    <div className="App">
+      {showLanding ? (
+        <LandingPage />
+      ) : (
+      <Layout>
+        {/* Professional Sidebar */}
         <Sider 
           trigger={null} 
           collapsible 
           collapsed={collapsed}
-          style={{
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)'
-          }}
+          width={256}
+          className="professional-sidebar"
         >
+          {/* Logo Section */}
           <div style={{ 
-            padding: '20px', 
-            textAlign: 'center',
-            borderBottom: '1px solid #e1e5e9'
+            padding: '32px 24px 24px', 
+            borderBottom: '1px solid var(--border)',
+            textAlign: collapsed ? 'center' : 'left'
           }}>
-            <ThunderboltOutlined style={{ 
-              fontSize: '2rem', 
-              color: '#667eea',
-              marginBottom: '10px'
-            }} />
-            {!collapsed && (
-              <Title level={4} style={{ margin: 0, color: '#667eea' }}>
-                APTpay
-              </Title>
-            )}
+            <div className="logo-section">
+              <div style={{ 
+                width: '40px', 
+                height: '40px', 
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: collapsed ? '0' : '12px'
+              }}>
+                <RocketOutlined style={{ fontSize: '20px', color: 'white' }} />
+              </div>
+              {!collapsed && (
+                <div>
+                  <div className="logo">APTpay</div>
+                  <div className="tagline">Enterprise Payroll Infrastructure</div>
+                </div>
+              )}
+            </div>
           </div>
           
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedKey]}
-            items={menuItems.map(item => ({
-              ...item,
-              onClick: () => setSelectedKey(item.key)
-            }))}
-            style={{ 
-              border: 'none',
-              background: 'transparent'
-            }}
-          />
+          {/* Navigation Menu */}
+          <div style={{ padding: '24px 0' }}>
+            {menuSections.map((section, index) => (
+              <div key={index} className="nav-section">
+                {!collapsed && (
+                  <div className="nav-section-title">{section.title}</div>
+                )}
+                <Menu
+                  mode="inline"
+                  selectedKeys={[selectedKey]}
+                  theme="dark"
+                  items={section.items.map(item => ({
+                    ...item,
+                    onClick: () => setSelectedKey(item.key)
+                  }))}
+                />
+              </div>
+            ))}
+          </div>
         </Sider>
         
         <Layout>
-          <Header style={{ 
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            padding: '0 30px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
-          }}>
-            <Button
-              type="text"
-              icon={collapsed ? <MenuOutlined /> : <MenuOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              style={{ fontSize: '16px', width: 64, height: 64 }}
-            />
-            
-            <Space size="large">
-              <Button 
-                type="primary" 
-                icon={<WalletOutlined />}
-                style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  border: 'none',
-                  borderRadius: '25px',
+          {/* Professional Header */}
+          <div className="header-container">
+            <div className="logo-section">
+              <Button
+                type="text"
+                icon={<MenuOutlined />}
+                onClick={() => setCollapsed(!collapsed)}
+                style={{ 
+                  color: 'var(--text-secondary)',
+                  marginRight: '16px',
+                  width: '40px',
                   height: '40px',
-                  padding: '0 20px'
+                  borderRadius: '8px'
                 }}
+              />
+              <div className="company-info">
+                <Text strong style={{ color: 'var(--text-primary)', fontSize: '18px' }}>
+                  Production Dashboard
+                </Text>
+                <div className="tagline">
+                  Cross-border payroll • $2.4M+ processed
+                </div>
+              </div>
+            </div>
+            
+            <div className="header-actions">
+              {/* System Status */}
+              <div className="wallet-status">
+                <div className="status-dot"></div>
+                <span>All Systems Operational</span>
+              </div>
+              
+              {/* Landing Page Toggle */}
+              <Button
+                onClick={() => setShowLanding(!showLanding)}
+                className="professional-button secondary"
+                style={{ height: '40px' }}
               >
-                Connect Wallet
+                {showLanding ? 'Dashboard' : 'Landing'}
               </Button>
-            </Space>
-          </Header>
+
+              {/* Notifications */}
+              <Badge count={3} size="small">
+                <Button
+                  type="text"
+                  icon={<BellOutlined />}
+                  onClick={() => setNotificationVisible(true)}
+                  style={{
+                    color: 'var(--text-secondary)',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '8px'
+                  }}
+                />
+              </Badge>
+
+              {/* Wallet Connection */}
+              <Button 
+                type={walletState?.connected ? "default" : "primary"}
+                icon={<WalletOutlined />}
+                onClick={handleWalletConnect}
+                className={walletState?.connected ? "professional-button secondary" : "professional-button"}
+                style={{ height: '44px' }}
+              >
+                {walletState?.connected 
+                  ? `${walletService.formatAddress(walletState.address || '')}` 
+                  : 'Connect Wallet'
+                }
+              </Button>
+
+              {/* User Menu */}
+              <Dropdown
+                menu={{ items: userMenuItems }}
+                placement="bottomRight"
+                trigger={['click']}
+              >
+                <Avatar 
+                  size={40}
+                  style={{ 
+                    background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <UserOutlined />
+                </Avatar>
+              </Dropdown>
+            </div>
+          </div>
           
-          <Content style={{ 
-            margin: '20px',
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '20px',
-            padding: '30px',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-            minHeight: 'calc(100vh - 120px)'
-          }}>
-            {renderContent()}
+          {/* Main Content Area */}
+          <Content>
+            <div className="content-container fade-in">
+              <div className="page-header">
+                <Title className="page-title">
+                  {menuSections
+                    .flatMap(section => section.items)
+                    .find(item => item.key === selectedKey)?.label || 'Dashboard'}
+                </Title>
+                <Text className="page-subtitle">
+                  Real-time cross-border payroll management powered by Aptos blockchain
+                </Text>
+              </div>
+              
+              {renderContent()}
+            </div>
           </Content>
         </Layout>
       </Layout>
-    </Router>
+      )}
+      
+      {/* Notification Center */}
+      <NotificationCenter 
+        visible={notificationVisible}
+        onClose={() => setNotificationVisible(false)}
+      />
+      
+      {/* Wallet Connect Modal */}
+      <WalletConnectModal
+        visible={walletModalVisible}
+        onClose={() => setWalletModalVisible(false)}
+        onWalletConnected={handleWalletConnected}
+      />
+    </div>
   );
 }
 

@@ -295,10 +295,10 @@ export class APTpayClient {
   // Utility Functions
   private async submitTransaction(
     account: AptosAccount,
-    payload: Types.TransactionPayload
+    payload: any
   ): Promise<string> {
     try {
-      const txnRequest = await this.client.generateTransaction(account.address(), payload);
+      const txnRequest = await this.client.generateTransaction(account.address(), payload as any);
       const signedTxn = await this.client.signTransaction(account, txnRequest);
       const transactionRes = await this.client.submitTransaction(signedTxn);
       await this.client.waitForTransaction(transactionRes.hash);
